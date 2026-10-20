@@ -1,0 +1,36 @@
+const express = require('express');
+const router = express.Router();
+const requireAuth = require('../middleware/auth');
+const requireRole = require('../middleware/role');
+const validateId = require('../middleware/validateId');
+const c = require('../controllers/adminController');
+const reviews = require('../controllers/reviewController');
+const network = require('../controllers/networkAdminController');
+
+router.use(requireAuth, requireRole('admin'));
+
+router.get('/stats', c.stats);
+
+router.get('/stores', c.listStores);
+router.get('/stores/:id/documents/:docId', validateId('id'), validateId('docId'), c.downloadDocument);
+router.patch('/stores/:id/approve', validateId('id'), c.approveStore);
+router.patch('/stores/:id/reject', validateId('id'), c.rejectStore);
+router.patch('/stores/:id/ban', validateId('id'), c.banStore);
+router.patch('/stores/:id/unban', validateId('id'), c.unbanStore);
+router.patch('/stores/:id/appeal', validateId('id'), c.resolveAppeal);
+
+router.get('/users', c.listUsers);
+router.patch('/users/:id/ban', validateId('id'), c.banUser);
+router.patch('/users/:id/unban', validateId('id'), c.unbanUser);
+
+router.get('/reviews', reviews.listForAdmin);
+router.delete('/reviews/:id', validateId('id'), reviews.removeAsAdmin);
+
+router.get('/network/reports', network.listReports);
+router.post('/network/reports/:id/resolve', validateId('id'), network.resolveReport);
+router.get('/network/stores', network.listStores);
+router.post('/network/stores/:id/status', validateId('id'), network.setStoreStatus);
+
+router.get('/audit-log', c.auditLog);
+
+module.exports = router;
